@@ -1,25 +1,23 @@
-# Efucloud Community Resources
+# 智易付社区版资源
 
-- 中文快速入口： [README.zh.md](README.zh.md)
+- English quick access: [README.en.md](README.en.md)
 
-## EAuth
-EAuth is an enterprise-grade authentication platform that offers face recognition, OpenID Connect (OIDC), Web identity, and other authentication methods. It supports multi-factor authentication (MFA), flexible token issuance so you can build single sign-on across applications, and provides refined account management to speed up authentication flows.
-
-### Source code
-1. Frontend: [github.com/efucloud/eauth](https://github.com/efucloud/eauth)
-2. Backend: [github.com/efucloud/eauth-console](https://github.com/efucloud/eauth-console)
-
-### Deployment
-1. Create the `efucloud` namespace:
+## 易认证
+易认证是一款企业级的认证平台，提供多种认证方式，包括人脸识别、OpenID Connect(OIDC)、Web身份认证等，支持多因素认证(MFA)， 灵活的令牌(Token)生成设置，可以实现不同应用间的一账通，能为企业提供精细化的认证管理，帮助企业快速完成认证流程，提高认证效率。
+### 开源地址: 
+1. [前端: https://github.com/efucloud/eauth](https://github.com/efucloud/eauth)
+2. [后端: https://github.com/efucloud/eauth-console](https://github.com/efucloud/eauth-console)
+### 部署
+1. 创建命名空间efucloud
 ```sh
 kubectl apply -f namespace.yaml
 ```
-2. Deploy MySQL if you do not already have a database service:
+1. 创建mysql数据库服务，如果已经有数据库服务可以跳过该步骤
 ```sh
-# For persistence, uncomment/comment the PVC and mount sections inside the manifest.
+# 如果需要持久化，修改yaml文件中的注释内容，创建PersistentVolumeClaim和挂载信息。
 kubectl apply -f mysql.yaml
 ```
-3. Update `backend.yaml` with your environment values. Example secret:
+1. 配置`backend.yaml`中的信息
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -29,18 +27,18 @@ metadata:
 type: Opaque
 stringData:
   config.yaml: |
-    # Serves as the base address that appears in /.well-known/openid-configuration.
-    serverAddress: "http://eauth-demo.efucloud.com"
+    # 将会作为/.well-known/openid-configuration中的地址信息
+    serverAddress: "http://eauth-demo.efucloud.com" 
     tokenPeriod: 16
-    # User avatar upload path; mount a PVC for persistence.
-    uploadPath: "/efucloud/uploads"
-    # Login method configuration
+    # 用户头像上传地址，可以挂载pvc持久化
+    uploadPath: "/efucloud/uploads" 
+    # 登录方式配置
     loginConfig:
-      # Enable face recognition
-      faceRecognition: true
-      # Enable MFA (global switch). Once enabled, disabling later does not remove MFA for already added users.
+      # 支持人脸识别
+      faceRecognition: true 
+      # 支持MFA，全局开关，若开启后再关闭，关闭之前添加的用户也不再使用MFA
       mfa: false
-    # Database configuration
+    # 数据库配置信息
     mysql:
       host: "mysql:3306"
       user: "root"
@@ -53,7 +51,7 @@ stringData:
       dontSupportRenameColumn: false
       dontSupportRenameIndex: false
       skipInitializeWithVersion: false
-    # Email settings used for password recovery
+    # 邮件配置信息，密码找回需要
     email:
       smtpServer: "smtp.qq.com"
       smtpPort: 465
@@ -68,24 +66,26 @@ stringData:
       compress: true
       localtime: true
 ```
-4. Deploy the backend and frontend. Adjust the Ingress settings in `frontend.yaml` if you use a custom domain, and add TLS configuration when possible.
+1. 部署前后端服务，若配置域名请求改`frontend.yaml`中的ingress信息，建议配置tls信息
 ```sh
 kubectl apply -f backend.yaml
 kubectl apply -f frontend.yaml
 ```
+## kube-keeper部署
+以Kubernetes为内核的AI+云原生分布式一站式研发交付运维工作台，支持多租户安全隔离与公私有云统一管理。提供乐高式可视化应用编排、AI辅助运维、可视化CI/CD流水线、私有化应用商店及MCP广场，并集成分布式云IDE，实现安全高效的开发、交付与运维一体化体验，本仓库提供的是单版版本。
 
-## kube-keeper deployment
-kube-keeper is an AI + cloud-native distributed all-in-one R&D, delivery, and ops cockpit built on Kubernetes. It supports multi-tenant isolation, hybrid cloud management, LEGO-style visual application orchestration, AI-guided operations, visual CI/CD, a private app marketplace plus MCP plaza, and an integrated cloud IDE. This repository stores the single-tenant edition.
+### 说明
+该项目未提供认证功能，需集成开源版本的易认证
 
-### Notes
-kube-keeper does not ship with its own authentication; connect it to EAuth for login management.
-
-### Deployment steps
-1. Create the namespace:
+### 部署
+1. 创建命名空间
 ```sh
 kubectl create ns efucloud
 ```
-2. Create the secret for configuration. First register an application in EAuth and capture the `clientId`, `clientSecret`, and the callback URL (`https://<your-kubekeeper-domain>/oauth/callback`):
+2. 后端配置
+在eauth中创建应用，获取clientid和clientsecret，其中回调地址为[kubekeeper的域名+'/oauth/callback'],例如：`https://kubekeeper.efucloud.com/oauth/callback`
+![](./docs/eauth/images/eauth.png)
+
 ```yaml
 kind: Secret
 apiVersion: v1
@@ -117,32 +117,32 @@ stringData:
       password: EfuCloud@Pwd
       skipInitializeWithVersion: false
       user: root
-    # EAuth authentication configuration
+    # eauth的认证配置信息
     oidcConfig:
       clientId: fvqahqk3vr3hsqguhes2u6nff
       clientSecret: gr6vfm63g6ndhythkx44p3aamfs4k3nfumd5qz24ofpdsr5747q
       issuer: http://eauth-demo.efucloud.com
-    # Third-party LLM API integration
+    # 对接第三方大模型api
     chatConfig:
       useTool: true
       address: https://dashscope.aliyuncs.com/compatible-mode/v1
       apiKey: sk-23486e1c9ed44d45cbb4babeaa
       model: qwen3-coder-480b-a35b-instruct
-    # Administrator email addresses; applied when users sign in
+    # 管理员的邮件地址，用户登录时生效
     adminEmails:
       - admin@efucloud.cn
       - admin@efucloud.com
-    # Container image used by terminal sessions
+    # terminal使用的镜像地址
     terminalContainer: registry.cn-shenzhen.aliyuncs.com/efucloud-public/k8s-tools:v1.0.0.03132013
 ```
-3. Apply the deployment manifest:
+3. 部署
 ```sh
 kubectl apply -f deployment.yaml
 ```
-4. Access kube-keeper via port-forward if you run in Kind or Minikube:
-```sh
-kubectl port-forward -n efucloud svc/<service-name> 8080:8080
-```
+4. 访问
+如果在kind，minikue上部署可以通过port-forward命令访问kube-keeper
 
-### Tutorials
-Check `docs/eauth/images/eauth.png` for the OIDC configuration screenshot and consult the Chinese README for additional guides and video links.
+5. 视频教程
+
+
+

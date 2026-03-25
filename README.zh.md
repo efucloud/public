@@ -1,5 +1,7 @@
 # 智易付社区版资源
 
+- English quick access: [README.en.md](README.en.md)
+
 ## 易认证
 易认证是一款企业级的认证平台，提供多种认证方式，包括人脸识别、OpenID Connect(OIDC)、Web身份认证等，支持多因素认证(MFA)， 灵活的令牌(Token)生成设置，可以实现不同应用间的一账通，能为企业提供精细化的认证管理，帮助企业快速完成认证流程，提高认证效率。
 ### 开源地址: 
@@ -141,7 +143,6 @@ kubectl apply -f deployment.yaml
 如果在kind，minikue上部署可以通过port-forward命令访问kube-keeper
 
 5. 视频教程
-
 
 
 
