@@ -2,9 +2,15 @@
 
 - 中文快速入口： [README.zh.md](README.zh.md)
 
-## EAuth
-EAuth is an enterprise-grade authentication platform that offers face recognition, OpenID Connect (OIDC), Web identity, and other authentication methods. It supports multi-factor authentication (MFA), flexible token issuance so you can build single sign-on across applications, and provides refined account management to speed up authentication flows.
+## Overview
+### kube-keeper
+kube-keeper is an AI + cloud-native distributed all-in-one R&D, delivery, and operations platform built on Kubernetes. It supports multi-tenant isolation and unified public/private cloud management. It provides LEGO-style visual application orchestration, AI-assisted operations, visual CI/CD pipelines, a private app marketplace, an MCP plaza, and an integrated distributed cloud IDE for secure and efficient end-to-end development, delivery, and operations. This repository provides the single-edition version.
+This project does not include built-in authentication and requires integration with the open-source EAuth.
 
+### EAuth
+EAuth is an enterprise-grade authentication platform that offers multiple authentication methods, including face recognition, OpenID Connect (OIDC), and web authentication. It supports multi-factor authentication (MFA) and flexible token generation policies to enable single sign-on across applications, helping enterprises build fine-grained authentication management and improve authentication efficiency.
+
+## EAuth
 ### Source code
 1. Frontend: [github.com/efucloud/eauth](https://github.com/efucloud/eauth)
 2. Backend: [github.com/efucloud/eauth-console](https://github.com/efucloud/eauth-console)
@@ -75,8 +81,6 @@ kubectl apply -f frontend.yaml
 ```
 
 ## kube-keeper deployment
-kube-keeper is an AI + cloud-native distributed all-in-one R&D, delivery, and ops cockpit built on Kubernetes. It supports multi-tenant isolation, hybrid cloud management, LEGO-style visual application orchestration, AI-guided operations, visual CI/CD, a private app marketplace plus MCP plaza, and an integrated cloud IDE. This repository stores the single-tenant edition.
-
 ### Notes
 kube-keeper does not ship with its own authentication; connect it to EAuth for login management.
 

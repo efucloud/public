@@ -2,8 +2,15 @@
 
 - English quick access: [README.en.md](README.en.md)
 
-## 易认证
+## 项目介绍
+### kube-keeper
+以Kubernetes为内核的AI+云原生分布式一站式研发交付运维工作台，支持多租户安全隔离与公私有云统一管理。提供乐高式可视化应用编排、AI辅助运维、可视化CI/CD流水线、私有化应用商店及MCP广场，并集成分布式云IDE，实现安全高效的开发、交付与运维一体化体验，本仓库提供的是单版版本。
+该项目未提供认证功能，需集成开源版本的易认证。
+
+### 易认证（eauth）
 易认证是一款企业级的认证平台，提供多种认证方式，包括人脸识别、OpenID Connect(OIDC)、Web身份认证等，支持多因素认证(MFA)， 灵活的令牌(Token)生成设置，可以实现不同应用间的一账通，能为企业提供精细化的认证管理，帮助企业快速完成认证流程，提高认证效率。
+
+## 易认证
 ### 开源地址: 
 1. [前端: https://github.com/efucloud/eauth](https://github.com/efucloud/eauth)
 2. [后端: https://github.com/efucloud/eauth-console](https://github.com/efucloud/eauth-console)
@@ -72,8 +79,6 @@ kubectl apply -f backend.yaml
 kubectl apply -f frontend.yaml
 ```
 ## kube-keeper部署
-以Kubernetes为内核的AI+云原生分布式一站式研发交付运维工作台，支持多租户安全隔离与公私有云统一管理。提供乐高式可视化应用编排、AI辅助运维、可视化CI/CD流水线、私有化应用商店及MCP广场，并集成分布式云IDE，实现安全高效的开发、交付与运维一体化体验，本仓库提供的是单版版本。
-
 ### 说明
 该项目未提供认证功能，需集成开源版本的易认证
 
@@ -143,6 +148,5 @@ kubectl apply -f deployment.yaml
 如果在kind，minikue上部署可以通过port-forward命令访问kube-keeper
 
 5. 视频教程
-
 
 
