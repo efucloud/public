@@ -43,7 +43,7 @@ spec:
             defaultMode: 420
       containers:
         - name: kube-keeper
-          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/kube-keeper:v1.0.0.202603250835
+          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/kube-keeper:v1.0.0.202603260729
           args:
             - "--config=./config/config.yaml"
           ports:
@@ -164,7 +164,7 @@ spec:
         - name: aliyun-acr-secret
       containers:
         - name: console
-          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/kube-keeper-console:v1.0.0.202603251749
+          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/kube-keeper-console:v1.0.0.202603260735
           ports:
             - name: http
               containerPort: 80
