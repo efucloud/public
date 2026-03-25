@@ -1,0 +1,332 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: kube-keeper
+  namespace: efucloud
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-keeper-binding
+subjects:
+  - kind: ServiceAccount
+    name: kube-keeper
+    namespace: efucloud
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kube-keeper
+  namespace: efucloud
+  labels:
+    app: kube-keeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-keeper
+  template:
+    metadata:
+      labels:
+        app: kube-keeper
+    spec:
+      serviceAccountName: kube-keeper
+      volumes:
+        - name: kube-keeper-config
+          secret:
+            secretName: kube-keeper-config
+            defaultMode: 420
+      containers:
+        - name: kube-keeper
+          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/kube-keeper:v1.0.0.202603250835
+          args:
+            - "--config=./config/config.yaml"
+          ports:
+            - name: http
+              containerPort: 9002
+              protocol: TCP
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          resources: {}
+          volumeMounts:
+            - name: kube-keeper-config
+              mountPath: /efucloud/config
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 9002
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: aliyun-acr-secret
+      schedulerName: default-scheduler
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: kube-keeper-config
+  namespace: efucloud
+type: Opaque
+stringData:
+  config.yaml: |
+    databaseAutoMigrate: true
+    logConfig:
+      compress: false
+      filename: ""
+      level: ""
+      localtime: false
+      maxage: 0
+      maxbackups: 0
+      maxsize: 0
+      production: true
+    mysql:
+      charset: utf8
+      dbname: kubekeeper
+      defaultStringSize: 0
+      disableDatetimePrecision: false
+      dontSupportRenameColumn: false
+      dontSupportRenameIndex: false
+      host: kubekeeper-mysql:3306
+      loc: ""
+      password: EfuCloud@Pwd
+      skipInitializeWithVersion: false
+      user: root
+    oidcConfig:
+      clientId: fvqahqk3vr3hsqguhes2u6nff
+      clientSecret: gr6vfm63g6ndhythkx44p3aamfs4k3nfumd5qz24ofpdsr5747q
+      issuer: http://eauth-demo.efucloud.com
+    chatConfig:
+      useTool: true
+      address: https://dashscope.aliyuncs.com/compatible-mode/v1
+      apiKey: sk-23486e1c9ed44d45cbb4babe
+      model: qwen3-coder-480b-a35b-instruct
+    adminEmails:
+      - admin@efucloud.cn
+      - admin@efucloud.com
+    terminalContainer: registry.cn-shenzhen.aliyuncs.com/efucloud-public/k8s-tools:v1.0.0.03132013
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kube-keeper
+  namespace: efucloud
+  labels:
+    app: kube-keeper
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9002
+      targetPort: 9002
+  selector:
+    app: kube-keeper
+  type: ClusterIP
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kube-keeper-console
+  labels:
+    app: kube-keeper-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-keeper-console
+  template:
+    metadata:
+      labels:
+        app: kube-keeper-console
+    spec:
+      volumes:
+        - name: nginx-conf
+          secret:
+            secretName: kube-keeper-console
+            defaultMode: 420
+      imagePullSecrets:
+        - name: aliyun-acr-secret
+      containers:
+        - name: console
+          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/kube-keeper-console:v1.0.0.202603251749
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          resources: {}
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: kube-keeper-console
+  namespace: efucloud
+type: Opaque
+stringData:
+  nginx.conf: |
+    user  root;
+    worker_processes  1;
+    error_log  /dev/stderr warn;
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        # 设置上传文件的最大值为 2000mb
+        client_max_body_size 2000m;
+
+        include       mime.types;
+        default_type  application/octet-stream;
+
+        gzip on;
+        gzip_disable "msie6";
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_buffers 16 8k;
+        gzip_http_version 1.1;
+        gzip_min_length 256;
+        gzip_types
+            text/plain
+            text/css
+            application/json
+            application/x-javascript
+            text/xml
+            application/xml
+            application/xml+rss
+            text/javascript
+            application/vnd.ms-fontobject
+            application/x-font-ttf
+            font/opentype
+            image/svg+xml
+            image/x-icon
+            application/javascript
+            image/webp;
+
+        # CORS headers (注意：生产环境不要用 *，应指定具体域名)
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods *;
+        add_header Access-Control-Allow-Headers *;
+        add_header Access-Control-Allow-Credentials true;
+        add_header Access-Control-Max-Age 3600;
+
+        client_header_buffer_size 16k;
+        large_client_header_buffers 4 64k;
+
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for" [$request_time $upstream_response_time] ';
+        access_log /dev/stdout main;
+        error_log  /dev/stderr warn;
+
+        sendfile        on;
+        keepalive_timeout  65;
+
+        # Proxy timeouts
+        proxy_connect_timeout 300;
+        proxy_send_timeout    300;
+        proxy_read_timeout    300;
+
+        upstream kube_keeper_backend {
+            server kube-keeper:9002;
+        }
+
+        map $http_upgrade $connection_upgrade {
+            default upgrade;
+            ''      close;
+        }
+
+        server {
+            listen       80;
+            server_name  kube-keeper.efucloud.com _;
+            underscores_in_headers on;
+
+            location /api/v1/ {
+                proxy_pass http://kube_keeper_backend$request_uri;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_read_timeout 300;
+                proxy_send_timeout 300;
+                proxy_connect_timeout 300;
+            }
+
+            location /api/ws/ {
+                proxy_pass http://kube_keeper_backend$request_uri;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection $connection_upgrade;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_buffering off;
+                proxy_read_timeout 86400;
+                proxy_send_timeout 86400;
+                proxy_connect_timeout 300;
+            }
+
+            location /api/stream/ {
+                proxy_pass http://kube_keeper_backend$request_uri;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_buffering off;
+                proxy_read_timeout 3600;
+                proxy_send_timeout 3600;
+                proxy_connect_timeout 300;
+            }
+
+            location / {
+                root   /usr/share/nginx/html;
+                index  index.html index.htm;
+                try_files $uri $uri/ /index.html;
+            }
+        }
+    }
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kube-keeper-console
+  namespace: efucloud
+  labels:
+    app: kube-keeper-console
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  selector:
+    app: kube-keeper-console
+  type: ClusterIP

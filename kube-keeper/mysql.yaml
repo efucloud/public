@@ -1,0 +1,82 @@
+# mysql-pvc.yaml
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: kubekeeper-mysql-pvc
+#   namespace: efucloud
+# spec:
+#   storageClassName: mysql-local-retain
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 50Gi
+---
+# mysql-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubekeeper-mysql-config
+  namespace: efucloud
+data:
+  my.cnf: |
+    [mysqld]
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubekeeper-mysql
+  namespace: efucloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubekeeper-mysql
+  template:
+    metadata:
+      labels:
+        app: kubekeeper-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: registry.cn-shenzhen.aliyuncs.com/efucloud-public/mysql:9.5.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "EfuCloud@Pwd"
+            - name: MYSQL_DATABASE
+              value: "kubekeeper"
+          volumeMounts:
+            # - name: mysql-data
+            #   mountPath: /var/lib/mysql
+            - name: mysql-config
+              mountPath: /etc/mysql/conf.d/my.cnf
+              subPath: my.cnf
+      volumes:
+        # - name: mysql-data
+        #   persistentVolumeClaim:
+        #     claimName: kubekeeper-mysql-pvc
+        - name: mysql-config
+          configMap:
+            name: kubekeeper-mysql-config
+      securityContext:
+        fsGroup: 999
+---
+# mysql-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubekeeper-mysql
+  namespace: efucloud
+spec:
+  selector:
+    app: kubekeeper-mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
