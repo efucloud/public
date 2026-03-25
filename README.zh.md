@@ -148,5 +148,11 @@ kubectl apply -f deployment.yaml
 如果在kind，minikue上部署可以通过port-forward命令访问kube-keeper
 
 5. 视频教程
+   即将推出
+
+## 社区群
+![](./docs/qq.jpg)
+
+  
 
 
