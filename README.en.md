@@ -1,6 +1,6 @@
 # Efucloud Community Resources
 
-- 中文快速入口： [README.zh.md](README.zh.md)
+- 中文快速入口： [README.md](README.zh.md)
 
 ## Overview
 ### kube-keeper
@@ -79,7 +79,7 @@ stringData:
 kubectl apply -f backend.yaml
 kubectl apply -f frontend.yaml
 ```
-
+supper admin `admin` password: `EfuCloud`
 ## kube-keeper deployment
 ### Notes
 kube-keeper does not ship with its own authentication; connect it to EAuth for login management.

@@ -78,6 +78,7 @@ stringData:
 kubectl apply -f backend.yaml
 kubectl apply -f frontend.yaml
 ```
+默认的管理员用户名`admin`密码：`EfuCloud`
 ## kube-keeper部署
 ### 说明
 该项目未提供认证功能，需集成开源版本的易认证
